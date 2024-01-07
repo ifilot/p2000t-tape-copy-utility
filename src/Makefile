@@ -1,10 +1,11 @@
-main.bin main.map main.rom: main.c memory.c util.c tape.asm
+main.bin main.map main.rom: main.c memory.c util.c tape.asm tape.c
 	zcc \
 	+embedded -clib=sdcc_iy \
 	main.c \
 	memory.c \
 	util.c \
 	tape.asm \
+	tape.c \
 	-startup=1 \
 	-pragma-define:CRT_ORG_CODE=0x1000 \
 	-pragma-define:CRT_ORG_DATA=0x6500 \

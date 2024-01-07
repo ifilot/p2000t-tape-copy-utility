@@ -21,6 +21,9 @@
 #ifndef _MEMORY_H
 #define _MEMORY_H
 
+#include <z80.h>
+#include "constants.h"
+
 #define LOWMEM          0x6200 // starting point of lower memory
 #define HIGHMEM_START   0xA000 // start address of upper memory
 #define HIGHMEM_STOP    0xDFFF // end address of upper memory
@@ -35,5 +38,7 @@ extern char* vidmem;
 extern char* keymem;
 extern char* highmem;
 extern char* bankmem;
+
+void set_bank(uint8_t);
 
 #endif // _MEMORY_H
