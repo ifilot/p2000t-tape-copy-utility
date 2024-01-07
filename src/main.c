@@ -33,7 +33,7 @@ int main(void) {
         sprintf(&vidmem[0x50*6], "(R) Read tape into memory");
         sprintf(&vidmem[0x50*7], "(W) Write tape from memory");
         sprintf(&vidmem[0x50*8], "(C) Check tape");
-        sprintf(&vidmem[0x50*9], "(R) Rewind tape");
+        sprintf(&vidmem[0x50*9], "(B) Rewind tape");
         //sprintf(&vidmem[0x50*10], "(H) Help");
 
         while(1) { // infinite loop while monitoring key presses
@@ -69,7 +69,7 @@ int main(void) {
                 break;
             }
 
-            if(memory[0x600D] == 39) {
+            if(memory[0x600D] == 29) {
                 clearlines(4,9);
                 sprintf(&vidmem[0x50*4], "Rewinding tape.");
                 tape_rewind();
