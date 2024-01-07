@@ -134,7 +134,7 @@ int main(void) {
 
         // retrieve all blocks and place them in their canonical memory position
         for(uint8_t i=0; i<nrblocksfile; i++) {
-            uint16_t target = memory[TRANSFER] + i * 0x400;
+            uint16_t target = (memory[TRANSFER] | (memory[TRANSFER+1] << 8)) + i * 0x400;
             uint8_t bank = (blockctr+i) / 8;
             uint8_t blockid = (blockctr+i) % 8;
             set_bank(bank);
