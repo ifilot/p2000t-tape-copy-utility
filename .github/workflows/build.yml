@@ -35,7 +35,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Build tape-copy application
+    - name: Build cartridge rom
       run: |
         cd src
         sed -i 's/node[0-9]+/node2000000/' Makefile
@@ -62,7 +62,7 @@ jobs:
       with:
         name: main.rom
         path: ./
-    - name: Set checksum key
+    - name: Patching checksum
       run: |
         python3 src/modheader.py main.rom
         mv main.rom TAPECOPY.BIN

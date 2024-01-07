@@ -25,7 +25,7 @@
 #define BLOCKCTR   0x604F
 #define MEMSIZE    0x605C
 #define TAPE       0x0018
-#define BUFFER     0x6100
+#define BUFFER     0xD500
 
 // I/O ports
 #define MEMBANK    0x94
