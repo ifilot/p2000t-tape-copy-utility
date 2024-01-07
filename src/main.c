@@ -23,17 +23,39 @@ int main(void) {
         while(1) {}
     }
 
-    // show list of operations
-    if(memory[0x605C] != 3) {
-        sprintf(&vidmem[0x50*4], "What operation would you like to perform?");
+    uint8_t totalblocks = 0;
+
+    while(1) { // infinite loop over operations
+        clearlines(4,9);  // clear lines
+
+        // show list of operations
+        sprintf(&vidmem[0x50*4], "Select operation:");
         sprintf(&vidmem[0x50*6], "(R) Read tape into memory");
         sprintf(&vidmem[0x50*7], "(W) Write tape from memory");
-        sprintf(&vidmem[0x50*8], "(C) Check tape");
-        sprintf(&vidmem[0x50*9], "(H) Help");
-        while(1) {}
-    }
+        //sprintf(&vidmem[0x50*8], "(C) Check tape");
+        //sprintf(&vidmem[0x50*9], "(H) Help");
 
-    return 0;
+        while(1) { // infinite loop while monitoring key presses
+            if(memory[0x600D] == 39) {
+                clearlines(4,9);
+                totalblocks = read_tape();
+                break;
+            }
+
+            if(memory[0x600D] == 35) {
+                clearlines(4,9);
+
+                if(totalblocks > 0) {
+                    write_tape(totalblocks);
+                } else {
+                    sprintf(&vidmem[0x50*4], "[ERROR] No tape data in memory.");
+                    sprintf(&vidmem[0x50*5], "Please perform tape read first.");
+                    wait_for_key();
+                }
+                break;
+            }
+        }
+    }
 }
 
 void init(void) {

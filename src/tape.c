@@ -1,9 +1,14 @@
 #include "tape.h"
 
 uint8_t read_tape(void) {
-    sprintf(&vidmem[0x50*3], "Press any key to read the tape.");
+    sprintf(&vidmem[0x50*4], "Press any key to read the tape.");
     while(keymem[0x0C] == 0) {} // wait until a key is pressed
-    clearline(3);
+    
+    // rewind the tape
+    clearline(4);
+    sprintf(&vidmem[0x50*4], "Rewinding tape.");
+    tape_rewind();
+    sprintf(&vidmem[0x50*4], "Reading data from tape...");
 
     // rewind the tape
     tape_rewind();
@@ -17,12 +22,8 @@ uint8_t read_tape(void) {
         tape_read_block();
 
         // show current program
-        sprintf(&vidmem[0x50*4], "Storing program in memory:");
-        show_current_program(5);
-
-        // print current tape header to screen
-        sprintf(&vidmem[0x50*7], "Block header (%02i)", blockctr+1);
-        print_header_hex(8);
+        sprintf(&vidmem[0x50*OPERATIONLINE], "Storing program in memory:");
+        show_current_program(PROGRAMLINE);
 
         // store header data in upper memory
         memcpy(&memory[MEMHEADER + blockctr * 0x20], &memory[TAPEHEAD], 0x20);
@@ -34,9 +35,10 @@ uint8_t read_tape(void) {
         memcpy(&memory[MEMDATA + blockid * 0x400], &memory[BUFFER], 0x400);
         
         // print block counter
-        sprintf(&vidmem[0x50*15], "Progress");
-        uint8_t line = 16 + blockctr / 12;
+        sprintf(&vidmem[0x50*PROGRESSLINE], "Blocks in memory");
+        uint8_t line = PROGRESSLINE + 1 + blockctr / 12;
         uint8_t item = blockctr % 12;
+        vidmem[0x50 * line + item*3 + 1] = COL_WHITE;
         vidmem[0x50 * line + item*3 + 2] = 127;
         vidmem[0x50 * line + item*3 + 3] = 127;
 
@@ -44,10 +46,13 @@ uint8_t read_tape(void) {
         blockctr++;
 
         if(memory[CASSTAT] != 0) {
-            sprintf(&vidmem[0x50*20], "Stop reading tape, exit code: %c", memory[CASSTAT]);
+            //sprintf(&vidmem[0x50*20], "Stop reading tape, exit code: %c", memory[CASSTAT]);
             break;
         }
     }
+
+    // clear program lines
+    clearlines(OPERATIONLINE, PROGRAMLINE);
 
     return blockctr;
 }
@@ -63,32 +68,19 @@ void write_tape(uint8_t totalblocks) {
     vidmem[0x50*8] = COL_RED;
     sprintf(&vidmem[0x50*8+1], "currently on the tape.");
 
-    keymem[0x0C] = 0;
-    while(keymem[0x0C] == 0) {} // wait until a key is pressed
+    // set all blocks to white
+    markblocks(0, totalblocks, COL_WHITE);
+
+    // wait for any key being pressed
+    wait_for_key();
 
     // clear lines
-    for(uint8_t i=4; i<21; i++) {
-        clearline(i);
-    }
+    clearlines(4,8);
 
     // rewind the tape
     sprintf(&vidmem[0x50*4], "Rewinding tape.");
     tape_rewind();
     sprintf(&vidmem[0x50*4], "Writing data to tape...");
-
-    // show layout of all programs to copy
-    for(uint8_t i=0; i<4; i++) {
-        for(uint8_t j=0; j<12; j++) {
-
-            if(i*12+j >= totalblocks) {
-                break;
-            }
-
-            vidmem[0x50*(i+6)+j*3+1] = COL_WHITE;
-            vidmem[0x50*(i+6)+j*3+2] = 127;
-            vidmem[0x50*(i+6)+j*3+3] = 127;
-        }
-    }
 
     /**
      * When writing back to the tape, we first have to reposition all the blocks
@@ -101,7 +93,7 @@ void write_tape(uint8_t totalblocks) {
     uint8_t blockctr = 0;
 
     while(blockctr < totalblocks) {
-        sprintf(&vidmem[0x50*13], "Writing %02i block(s)", totalblocks);
+        sprintf(&vidmem[0x50*5], "Writing %02i block(s)", totalblocks);
 
         // retrieve header data from upper memory
         memcpy(&memory[TAPEHEAD], &memory[MEMHEADER + blockctr * 0x20], 0x20);
@@ -111,8 +103,8 @@ void write_tape(uint8_t totalblocks) {
         markblocks(blockctr, blockctr+nrblocksfile, COL_CYAN);
 
         // print file information
-        sprintf(&vidmem[0x50*12], "Current program:");
-        show_current_program(13);
+        sprintf(&vidmem[0x50*OPERATIONLINE], "Storing program on tape:");
+        show_current_program(PROGRAMLINE);
 
         // retrieve all blocks and place them in their canonical memory position
         for(uint8_t i=0; i<nrblocksfile; i++) {
@@ -131,6 +123,9 @@ void write_tape(uint8_t totalblocks) {
         // increment blockcounter
         blockctr += nrblocksfile;
     }
+
+    // clear program lines
+    clearlines(OPERATIONLINE, PROGRAMLINE);
 
     // write end of tape marker
     tape_write_eot();
@@ -167,7 +162,7 @@ void markblocks(uint8_t start, uint8_t stop, uint8_t color) {
         for(uint8_t j=0; j<12; j++) {
 
             if(i*12+j >= start && i*12+j < stop) {
-                vidmem[0x50*(i+6)+j*3+1] = color;   
+                vidmem[0x50*(i+PROGRESSLINE+1)+j*3+1] = color;   
             }
         }
     }

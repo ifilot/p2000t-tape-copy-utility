@@ -54,11 +54,17 @@ jobs:
     permissions: write-all
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
+    - name: Install programs
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y python3 python3-numpy
     - name: Download artifact
       uses: actions/download-artifact@v3
       with:
         name: TAPECOPY.BIN
         path: ./
+    - name: Set checksum key
+      run: python3 src/modheader.py TAPECOPY.BIN
     - name: Upload Release Asset
       id: upload-release-asset 
       uses: actions/upload-release-asset@v1

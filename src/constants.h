@@ -34,4 +34,9 @@
 #define MEMHEADER  0xD900
 #define MEMDATA    0xE000
 
+// UI LOCATIONS
+#define OPERATIONLINE  11
+#define PROGRAMLINE    12
+#define PROGRESSLINE   14
+
 #endif // _CONSTANTS_H
