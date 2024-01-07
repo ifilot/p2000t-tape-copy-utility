@@ -1,7 +1,14 @@
 import numpy as np
+import argparse
 
 def main():
-    with open('main.rom', mode='rb') as f:
+    parser = argparse.ArgumentParser(
+                    prog='MCH',
+                    description='Place the correct checksum on the parser')
+    parser.add_argument('filename')
+    args = parser.parse_args()
+
+    with open(args.filename, mode='rb') as f:
         data = bytearray(f.read())
         f.close()
 
@@ -19,7 +26,7 @@ def main():
     data[0x04] = ~((checksum >> 8) & 0xFF) & 0xFF
 
     # update main.rom
-    with open('main.rom', mode='wb') as f:
+    with open(args.filename, mode='wb') as f:
         f.write(data)
         f.close()
 

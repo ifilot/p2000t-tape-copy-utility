@@ -1,3 +1,5 @@
+#include "memory.h"
+
 // set video memory
 __at (0x0000) char MEMORY[];
 char* memory = MEMORY;
@@ -13,3 +15,7 @@ char* highmem = HIGHMEM;
 
 __at (0xE000) char BANKMEM[];
 char* bankmem = BANKMEM;
+
+void set_bank(uint8_t bank) {
+    z80_outp(MEMBANK, bank);
+}

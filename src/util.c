@@ -20,5 +20,20 @@ void printhex(uint16_t vidaddr, uint8_t val) {
 }
 
 void clearline(uint8_t row) {
-    memset(&vidmem[row * 0x50], 0x00, 40);
+    memset(&vidmem[row * 0x50], 0x00, 0x50);
+}
+
+void clearlines(uint8_t start, uint8_t stop) {
+    for(uint8_t i=start; i<=stop; i++) {
+        clearline(i);
+    }
+}
+
+void clearscreen(void) {
+    clearlines(0, 24);
+}
+
+void wait_for_key(void) {
+    keymem[0x0C] = 0;
+    while(keymem[0x0C] == 0) {} // wait until a key is pressed
 }
