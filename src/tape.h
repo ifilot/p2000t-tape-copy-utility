@@ -10,9 +10,11 @@
 // regular routines
 uint8_t read_tape(void);
 void write_tape(uint8_t);
+void check_tape(uint8_t);
 
 // auxiliary routines
 void show_current_program(uint8_t);
+void show_program_from_memory(uint8_t, uint8_t);
 void markblocks(uint8_t, uint8_t, uint8_t);
 void print_header_hex(uint8_t);
 

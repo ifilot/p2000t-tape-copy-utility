@@ -59,14 +59,15 @@ uint8_t read_tape(void) {
 
 void write_tape(uint8_t totalblocks) {
     // provide message to the user to change the tape
-    sprintf(&vidmem[0x50*4], " Insert tape to write programs to");
-    sprintf(&vidmem[0x50*5], " and PRESS ANY KEY.");
+    sprintf(&vidmem[0x50*4], " Insert tape to write programs to.");
 
     // and warn that any existing data on that tape will be overwritten
+    vidmem[0x50*6] = COL_RED;
+    sprintf(&vidmem[0x50*6+1], "WARNING: This will overwrite any data");
     vidmem[0x50*7] = COL_RED;
-    sprintf(&vidmem[0x50*7+1], "WARNING: This will overwrite any data");
-    vidmem[0x50*8] = COL_RED;
-    sprintf(&vidmem[0x50*8+1], "currently on the tape.");
+    sprintf(&vidmem[0x50*7+1], "currently on the tape.");
+
+    sprintf(&vidmem[0x50*9], " PRESS ANY KEY TO CONTINUE");
 
     // set all blocks to white
     markblocks(0, totalblocks, COL_WHITE);
@@ -80,7 +81,7 @@ void write_tape(uint8_t totalblocks) {
     // rewind the tape
     sprintf(&vidmem[0x50*4], "Rewinding tape.");
     tape_rewind();
-    sprintf(&vidmem[0x50*4], "Writing data to tape...");
+    sprintf(&vidmem[0x50*4], "Writing %02i block(s) to tape", totalblocks);
 
     /**
      * When writing back to the tape, we first have to reposition all the blocks
@@ -93,7 +94,6 @@ void write_tape(uint8_t totalblocks) {
     uint8_t blockctr = 0;
 
     while(blockctr < totalblocks) {
-        sprintf(&vidmem[0x50*5], "Writing %02i block(s)", totalblocks);
 
         // retrieve header data from upper memory
         memcpy(&memory[TAPEHEAD], &memory[MEMHEADER + blockctr * 0x20], 0x20);
@@ -131,6 +131,65 @@ void write_tape(uint8_t totalblocks) {
     tape_write_eot();
 }
 
+void check_tape(uint8_t totalblocks) {
+    // set all blocks to white
+    markblocks(0, totalblocks, COL_WHITE);
+
+    // rewind the tape
+    sprintf(&vidmem[0x50*4], "Rewinding tape.");
+    tape_rewind();
+    sprintf(&vidmem[0x50*4], "Checking %02i block(s) on tape", totalblocks);
+
+    for(uint8_t i=0; i<totalblocks; i++) {
+        // read block from the tape
+        tape_read_block();
+
+        // show current program
+        sprintf(&vidmem[0x50*OPERATIONLINE], "Checking program in memory:");
+        show_program_from_memory(PROGRAMLINE, i);
+
+        // determine position in memory
+        uint8_t bank = i/8;
+        uint8_t blockid = i%8;
+
+        // check if tape contents is correct
+        uint8_t flag = 0;
+        set_bank(bank);
+        for(uint16_t j=0; j<0x400; j++) {
+            if(memory[MEMDATA + blockid * 0x400 + j] != memory[BUFFER+j]) {
+                flag += 1;
+                break;
+            }
+        }
+
+        // check if tape header is correct
+        for(uint8_t j=0; j<0x20; j++) {
+            if(memory[MEMHEADER + i * 0x20 + j] != memory[TAPEHEAD + j]) {
+                flag += 2;
+                break;
+            }
+        }
+
+        switch(flag) {
+            case 0:
+                markblocks(i, i+1, COL_GREEN);
+            break;
+            case 1:
+                markblocks(i, i+1, COL_RED);
+            break;
+            case 2:
+                markblocks(i, i+1, COL_CYAN);
+            break;
+            case 3:
+                markblocks(i, i+1, COL_RED);
+            break;
+        }
+    }
+
+    // clear program lines
+    clearlines(OPERATIONLINE, PROGRAMLINE);
+}
+
 void show_current_program(uint8_t line) {
     vidmem[0x50 * line] = COL_YELLOW;
 
@@ -154,6 +213,33 @@ void show_current_program(uint8_t line) {
     // number of blocks and number of bytes
     uint8_t nrblocks = memory[BLOCKCTR];
     uint16_t nrbytes = memory[FILESIZE] | (memory[FILESIZE+1] << 8);
+    sprintf(&vidmem[0x50*line+25], "%2i %5i", nrblocks, nrbytes);
+}
+
+void show_program_from_memory(uint8_t line, uint8_t program_id) {
+    uint16_t mempos = MEMHEADER + program_id * 0x20;
+    vidmem[0x50 * line] = COL_YELLOW;
+
+    // program name
+    char progname[17];
+    progname[16] = '\0';
+    memcpy(&progname[0], &memory[mempos + 0x06], 8);
+    memcpy(&progname[8], &memory[mempos + 0x17], 8);
+    sprintf(&vidmem[0x50*line+1], "%s", progname);
+
+    // extension
+    char ext[4];
+    ext[3] = '\0';
+    memcpy(&ext[0], &memory[mempos + 0x0E], 3);
+    sprintf(&vidmem[0x50*line+18], "%s", ext);
+
+    // type
+    vidmem[0x50*line+22] = COL_CYAN;
+    vidmem[0x50*line+23] = memory[mempos + 0x11];
+    
+    // number of blocks and number of bytes
+    uint8_t nrblocks = memory[mempos + 0x1F];
+    uint16_t nrbytes = memory[mempos + 0x04] | (memory[mempos + 0x05] << 8);
     sprintf(&vidmem[0x50*line+25], "%2i %5i", nrblocks, nrbytes);
 }
 

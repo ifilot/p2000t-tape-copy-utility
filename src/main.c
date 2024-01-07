@@ -32,7 +32,7 @@ int main(void) {
         sprintf(&vidmem[0x50*4], "Select operation:");
         sprintf(&vidmem[0x50*6], "(R) Read tape into memory");
         sprintf(&vidmem[0x50*7], "(W) Write tape from memory");
-        //sprintf(&vidmem[0x50*8], "(C) Check tape");
+        sprintf(&vidmem[0x50*8], "(C) Check tape");
         //sprintf(&vidmem[0x50*9], "(H) Help");
 
         while(1) { // infinite loop while monitoring key presses
@@ -47,6 +47,19 @@ int main(void) {
 
                 if(totalblocks > 0) {
                     write_tape(totalblocks);
+                } else {
+                    sprintf(&vidmem[0x50*4], "[ERROR] No tape data in memory.");
+                    sprintf(&vidmem[0x50*5], "Please perform tape read first.");
+                    wait_for_key();
+                }
+                break;
+            }
+
+            if(memory[0x600D] == 28) {
+                clearlines(4,9);
+
+                if(totalblocks > 0) {
+                    check_tape(totalblocks);
                 } else {
                     sprintf(&vidmem[0x50*4], "[ERROR] No tape data in memory.");
                     sprintf(&vidmem[0x50*5], "Please perform tape read first.");
