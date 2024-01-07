@@ -33,7 +33,8 @@ int main(void) {
         sprintf(&vidmem[0x50*6], "(R) Read tape into memory");
         sprintf(&vidmem[0x50*7], "(W) Write tape from memory");
         sprintf(&vidmem[0x50*8], "(C) Check tape");
-        //sprintf(&vidmem[0x50*9], "(H) Help");
+        sprintf(&vidmem[0x50*9], "(R) Rewind tape");
+        //sprintf(&vidmem[0x50*10], "(H) Help");
 
         while(1) { // infinite loop while monitoring key presses
             if(memory[0x600D] == 39) {
@@ -67,11 +68,20 @@ int main(void) {
                 }
                 break;
             }
+
+            if(memory[0x600D] == 39) {
+                clearlines(4,9);
+                sprintf(&vidmem[0x50*4], "Rewinding tape.");
+                tape_rewind();
+                clearline(4);
+                break;
+            }
         }
     }
 }
 
 void init(void) {
+    clearscreen();
     vidmem[0x50] = TEXT_DOUBLE;
     vidmem[0x50+1] = COL_CYAN;
     sprintf(&vidmem[0x50+2], "TAPE-COPY-UTILITY");
