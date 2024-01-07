@@ -23,5 +23,6 @@ void tape_rewind(void);
 void tape_read_block(void);
 void tape_write_block(void);
 void tape_write_eot(void);
+void tape_skip_back(void);
 
 #endif // _TAPE_H

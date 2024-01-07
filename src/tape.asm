@@ -14,6 +14,7 @@ PUBLIC _tape_rewind
 PUBLIC _tape_read_block
 PUBLIC _tape_write_block
 PUBLIC _tape_write_eot
+PUBLIC _tape_skip_back
 
 ; constants for cassette instructions
 CAS_INIT:   equ $00
@@ -93,6 +94,16 @@ _tape_write_block:
 _tape_write_eot:
     push ix             ; conserve ix because it is used as frame pointer
     ld a,CAS_EOT        ; write end of tape
+    call TAPE
+    pop ix              ; retrieve ix, needed by frame pointer
+    ret
+
+;-------------------------------------------------------------------------------
+; skip back a position on the tape
+;-------------------------------------------------------------------------------
+_tape_skip_back:
+    push ix             ; conserve ix because it is used as frame pointer
+    ld a,CAS_SKIPB      ; skip back
     call TAPE
     pop ix              ; retrieve ix, needed by frame pointer
     ret
