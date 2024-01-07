@@ -13,6 +13,7 @@ SECTION code_user
 PUBLIC _tape_rewind
 PUBLIC _tape_read_block
 PUBLIC _tape_write_block
+PUBLIC _tape_write_eot
 
 ; constants for cassette instructions
 CAS_INIT:   equ $00
@@ -81,9 +82,17 @@ tprdexit:
 ;-------------------------------------------------------------------------------
 _tape_write_block:
     push ix             ; conserve ix because it is used as frame pointer
-    ld a,CAS_INIT       ; initialize tape drive
-    call TAPE
     ld a,CAS_WRITE      ; start write routine
+    call TAPE
+    pop ix              ; retrieve ix, needed by frame pointer
+    ret
+
+;-------------------------------------------------------------------------------
+; write an end of tape marker
+;-------------------------------------------------------------------------------
+_tape_write_eot:
+    push ix             ; conserve ix because it is used as frame pointer
+    ld a,CAS_EOT        ; write end of tape
     call TAPE
     pop ix              ; retrieve ix, needed by frame pointer
     ret

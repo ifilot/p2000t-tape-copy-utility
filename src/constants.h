@@ -30,4 +30,8 @@
 // I/O ports
 #define MEMBANK    0x94
 
+// STORAGE LOCATIONS
+#define MEMHEADER  0xD900
+#define MEMDATA    0xE000
+
 #endif // _CONSTANTS_H
