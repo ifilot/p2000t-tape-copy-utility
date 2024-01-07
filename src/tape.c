@@ -46,8 +46,12 @@ uint8_t read_tape(void) {
         blockctr++;
 
         if(memory[CASSTAT] != 0) {
-            //sprintf(&vidmem[0x50*20], "Stop reading tape, exit code: %c", memory[CASSTAT]);
-            break;
+            if(memory[CASSTAT] == 'C') {
+                sprintf(&vidmem[0x50*20], "Checksum error encountered; block %02i.", blockctr);
+            } else {
+                sprintf(&vidmem[0x50*20], "Stop reading tape, exit code: %c", memory[CASSTAT]);
+                break;
+            }
         }
     }
 
@@ -116,7 +120,7 @@ void write_tape(uint8_t totalblocks) {
         }
 
         // write data back to tape
-        markblocks(blockctr, blockctr+nrblocksfile, COL_RED);
+        markblocks(blockctr, blockctr+nrblocksfile, COL_CYAN);
         tape_write_block();
         markblocks(blockctr, blockctr+nrblocksfile, COL_GREEN);
 
