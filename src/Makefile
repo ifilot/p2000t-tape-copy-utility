@@ -8,7 +8,7 @@ main.bin main.map main.rom: main.c memory.c util.c tape.asm
 	-startup=1 \
 	-pragma-define:CRT_ORG_CODE=0x1000 \
 	-pragma-define:CRT_ORG_DATA=0x6500 \
-	-pragma-define:REGISTER_SP=0x9FFF \
+	-pragma-define:REGISTER_SP=0xDFFF \
 	-pragma-define:CRT_STACK_SIZE=256 \
 	-pragma-define:CRT_INCLUDE_PREAMBLE=1 \
 	-pragma-define:CLIB_FOPEN_MAX=0 \
