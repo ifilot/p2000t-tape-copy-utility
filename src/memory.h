@@ -39,6 +39,11 @@ extern char* keymem;
 extern char* highmem;
 extern char* bankmem;
 
+/**
+ * @brief Set the bank in memory
+ * 
+ * @param bank bank index [0-5]
+ */
 void set_bank(uint8_t);
 
 #endif // _MEMORY_H

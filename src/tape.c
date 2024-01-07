@@ -1,5 +1,31 @@
+/**************************************************************************
+ *                                                                        *
+ *   Author: Ivo Filot <ivo@ivofilot.nl>                                  *
+ *   https://github.com/ifilot/p2000t-tape-copy-utility
+ *                                                                        *
+ *   This is free software:                                               *
+ *   you can redistribute it and/or modify it under the terms of the      *
+ *   GNU General Public License as published by the Free Software         *
+ *   Foundation, either version 3 of the License, or (at your option)     *
+ *   any later version.                                                   *
+ *                                                                        *
+ *   This program is distributed in the hope that it will be useful,      *
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty          *
+ *   of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.              *
+ *   See the GNU General Public License for more details.                 *
+ *                                                                        *
+ *   You should have received a copy of the GNU General Public License    *
+ *   along with this program.  If not, see http://www.gnu.org/licenses/.  *
+ *                                                                        *
+ **************************************************************************/
+
 #include "tape.h"
 
+/**
+ * @brief Read all blocks from a tape
+ * 
+ * @return uint8_t number of blocks read
+ */
 uint8_t read_tape(void) {
     sprintf(&vidmem[0x50*4], "Press any key to read the tape.");
     while(keymem[0x0C] == 0) {} // wait until a key is pressed
@@ -9,6 +35,9 @@ uint8_t read_tape(void) {
     sprintf(&vidmem[0x50*4], "Rewinding tape.");
     tape_rewind();
     sprintf(&vidmem[0x50*4], "Reading data from tape...");
+
+    // clear program block lines
+    clearlines(PROGRESSLINE, PROGRESSLINE+4);
 
     // rewind the tape
     tape_rewind();
@@ -61,6 +90,11 @@ uint8_t read_tape(void) {
     return blockctr;
 }
 
+/**
+ * @brief Write programs from memory to tape
+ * 
+ * @param totalblocks total number of blocks to write
+ */
 void write_tape(uint8_t totalblocks) {
     // provide message to the user to change the tape
     sprintf(&vidmem[0x50*4], " Insert tape to write programs to.");
@@ -135,6 +169,11 @@ void write_tape(uint8_t totalblocks) {
     tape_write_eot();
 }
 
+/**
+ * @brief Verify all blocks on tape with the contents in memory
+ * 
+ * @param totalblocks number of blocks to compare
+ */
 void check_tape(uint8_t totalblocks) {
     // set all blocks to white
     markblocks(0, totalblocks, COL_WHITE);
@@ -194,6 +233,12 @@ void check_tape(uint8_t totalblocks) {
     clearlines(OPERATIONLINE, PROGRAMLINE);
 }
 
+/**
+ * @brief Show information about the current program on the screen, data is
+ *        grabbed from the current cassette header data in memory.
+ * 
+ * @param line which line to display the information at (zero-based)
+ */
 void show_current_program(uint8_t line) {
     vidmem[0x50 * line] = COL_YELLOW;
 
@@ -220,6 +265,12 @@ void show_current_program(uint8_t line) {
     sprintf(&vidmem[0x50*line+25], "%2i %5i", nrblocks, nrbytes);
 }
 
+/**
+ * @brief Show information about a program already residing in memory.
+ * 
+ * @param line which line to display the information at (zero-based)
+ * @param program_id which program to display the information for (zero-based)
+ */
 void show_program_from_memory(uint8_t line, uint8_t program_id) {
     uint16_t mempos = MEMHEADER + program_id * 0x20;
     vidmem[0x50 * line] = COL_YELLOW;
@@ -247,6 +298,13 @@ void show_program_from_memory(uint8_t line, uint8_t program_id) {
     sprintf(&vidmem[0x50*line+25], "%2i %5i", nrblocks, nrbytes);
 }
 
+/**
+ * @brief Mark blocks on the display with a color
+ * 
+ * @param start first block
+ * @param stop last block
+ * @param color color
+ */
 void markblocks(uint8_t start, uint8_t stop, uint8_t color) {
     for(uint8_t i=0; i<4; i++) {
         for(uint8_t j=0; j<12; j++) {
@@ -258,6 +316,11 @@ void markblocks(uint8_t start, uint8_t stop, uint8_t color) {
     }
 }
 
+/**
+ * @brief Print the cassette header as hex-characters on the screen
+ * 
+ * @param line which line to start printing at (zero-based)
+ */
 void print_header_hex(uint8_t line) {
     for(uint8_t i=0; i<4; i++) {
         vidmem[0x50 * (i+line)] = COL_CYAN;
